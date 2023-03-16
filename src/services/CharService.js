@@ -22,7 +22,7 @@ const useCharService = () => {
 
     const getCharacterbyNameInput =  async (name) => {
         const res =  await request(`${_apiBase}characters?nameStartsWith=${name}&orderBy=name&apikey=${process.env.REACT_APP_ACCESS_KEY}`);
-        return res.data.results.map(item => _transformCharacter(item));
+        return res.data.results.map(_transformCharacter);
     }
 
     const _transformCharacter = (char) => {
