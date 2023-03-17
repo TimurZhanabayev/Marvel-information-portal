@@ -1,7 +1,7 @@
 import { useHttp } from "../hooks/http.hook";
 
 const useCharService = () => {
-    const {loading, request, error, clearError, procedure, setProcedure} = useHttp();
+    const {request, clearError, procedure, setProcedure} = useHttp();
     const _apiBase = 'https://gateway.marvel.com:443/v1/public/';
     const _baseOffset = 210;
 
@@ -38,8 +38,6 @@ const useCharService = () => {
     }
 
     return {
-        loading,
-        error,
         procedure,
         setProcedure,
         getAllCharacters,

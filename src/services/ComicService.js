@@ -1,7 +1,7 @@
 import { useHttp } from "../hooks/http.hook";
 
 const useComicService = () => {
-    const {loading, request, error, clearError, procedure, setProcedure} = useHttp();
+    const {request, clearError, procedure, setProcedure} = useHttp();
     const _apiBase = 'https://gateway.marvel.com:443/v1/public/';
 
     const getAllComics = async (offset = 0) => {
@@ -29,8 +29,6 @@ const useComicService = () => {
     }
 
     return {
-        loading,
-        error,
         procedure, 
         setProcedure,
         getAllComics,
