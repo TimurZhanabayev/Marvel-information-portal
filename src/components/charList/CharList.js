@@ -4,13 +4,28 @@ import Spinner from '../spinner/Spinner';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import './charList.scss';
 
+const setContent = (procedure, Component, newItemLoading) => {
+    switch (procedure) {
+        case 'waiting': 
+            return <Spinner/>
+        case 'loading':
+            return newItemLoading ? <Component/> : <Spinner/>;
+        case 'confirmed':
+            return <Component/>
+        case 'error':
+            return <ErrorMessage/>
+        default:
+            throw new Error('Unexpected procedure state');
+    }
+}
+
 const CharList = (props) => {
     const [charList, setCharList] = useState([]);
     const [newItemLoading, setNewItemLoading] = useState(false);
     const [offset, setOffset] = useState(210);
-    const [charEnded, setcharEnded] = useState(false);
+    const [charEnded, setCharEnded] = useState(false);
 
-    const {loading, error, getAllCharacters} = useCharService();
+    const {procedure, setProcedure, getAllCharacters} = useCharService();
 
     useEffect(() => {
         onRequest(offset, true);
@@ -21,7 +36,8 @@ const CharList = (props) => {
     const onRequest = (offset, init) => {
         init ? setNewItemLoading(false) : setNewItemLoading(true);
         getAllCharacters(offset)
-            .then(onCharListLoaded);
+            .then(onCharListLoaded)
+            .then(() => setProcedure('confirmed'));
     }
 
     const onCharListLoaded = (newCharList) => {
@@ -31,9 +47,9 @@ const CharList = (props) => {
         }
 
         setCharList(charList => [...charList, ...newCharList]);
-        setNewItemLoading(newItemLoading => false);
+        setNewItemLoading(false);
         setOffset(offset => offset + 9);
-        setcharEnded(chatEnded => ended);
+        setCharEnded(chatEnded => ended);
     }
 
     const charEndMessage = () => {
@@ -89,15 +105,11 @@ const CharList = (props) => {
     }
 
 
-    const items = renderItems(charList);
-    const errorMessage = error ? <ErrorMessage/> : null;
-    const spinner = loading && !newItemLoading ? <Spinner/> : null;
+    const items = () => renderItems(charList);
     const end = charEndMessage();
     return (
         <div className="char__list">
-            {errorMessage}
-            {spinner}
-            {items}
+            {setContent(procedure, items, newItemLoading)}
             <button 
                 className="button button__main button__long"
                 disabled={newItemLoading}

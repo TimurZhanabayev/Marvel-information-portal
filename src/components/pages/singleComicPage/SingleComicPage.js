@@ -2,17 +2,16 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import AppBanner from '../../appBanner/AppBanner';
 import useComicService from '../../../services/ComicService';
-import ErrorMessage from '../../errorMessage/ErrorMessage';
-import Spinner from '../../spinner/Spinner';
+import setContent from '../../../utils/setContents';
 
 import './singleComicPage.scss';
 
 const SingleComicPage = () => {
     const {comicId} = useParams();
-    const [comic, setComic] = useState(null);
+    const [comic, setComic] = useState({});
     console.log(comic);
     
-    const {loading, error, getComic, clearError} = useComicService();
+    const {getComic, clearError, procedure, setProcedure} = useComicService();
     
 
     useEffect(() => {
@@ -26,24 +25,19 @@ const SingleComicPage = () => {
     const updateComic = () => {
         clearError();
         getComic(comicId)
-            .then(onComicLoaded);
+            .then(onComicLoaded)
+            .then(() => setProcedure('confirmed'));
     }
-
-    const errorMessage = error ? <ErrorMessage/> : null;
-    const spinner = loading ? <Spinner/> : null;
-    const content = !(loading || error || !comic) ? <View comic={comic}/> : null
     return (
         <>
             <AppBanner/>
-            {errorMessage}
-            {spinner}
-            {content}
+            {setContent(procedure, View, comic)}
         </>
     )
 }
 
-const View = ({comic}) => {
-    const {title, thumbnail, price, description, pageCount, language} = comic;
+const View = ({data}) => {
+    const {title, thumbnail, price, description, pageCount, language} = data;
     // const navigate = useNavigate();
     // const onBack = () => {
     //     navigate(-1);

@@ -3,8 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import AppBanner from '../../appBanner/AppBanner';
 import useCharService from '../../../services/CharService';
-import ErrorMessage from '../../errorMessage/ErrorMessage';
-import Spinner from '../../spinner/Spinner';
+import setContent from '../../../utils/setContents';
 
 import './singleCharPage.scss';
 
@@ -13,7 +12,7 @@ const SingleCharPage = () => {
     const [char, setChar] = useState({});
     console.log(char);
 
-    const {loading, error, getCharacter, clearError} = useCharService();
+    const {getCharacter, clearError, procedure, setProcedure} = useCharService();
 
     useEffect(() => {
         updateChar()
@@ -26,30 +25,34 @@ const SingleCharPage = () => {
 
     const updateChar = () => {
         clearError();
-        getCharacter(charId).then(char => onCharLoaded(char))
+        getCharacter(charId)
+            .then(char => onCharLoaded(char))
+            .then(() => setProcedure('confirmed'));
     }
 
-    const errorMessage = error ? <ErrorMessage/> : null;
-    const spinner = loading ? <Spinner/> : null;
-    const {name, thumbnail, description} = char;
+    return (
+        <>
+            <AppBanner/>
+            {setContent(procedure, View, char)}
+        </>
+    )
+}
+
+const View = ({data}) => {
+    const {name, thumbnail, description} = data;
     let imgStyle = {'objectFit' : 'cover'};
     if (thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg') {
         imgStyle = {'objectFit' : 'unset'};
     }
     return (
-        <>
-            <AppBanner/>
-            {errorMessage}
-            {spinner}
-            <div className="single-char">
-                <img src={thumbnail} alt={name} className="single-char__img" style={imgStyle}/>
-                <div className="single-char__info">
-                    <h2 className="single-char__name">{name}</h2>
-                    <p className="single-char__descr">{description}</p>
-                </div>
-                <Link to="/" className="single-char__back">Back to all</Link>
+        <div className="single-char">
+            <img src={thumbnail} alt={name} className="single-char__img" style={imgStyle}/>
+            <div className="single-char__info">
+                <h2 className="single-char__name">{name}</h2>
+                <p className="single-char__descr">{description}ew</p>
             </div>
-        </>
+            <Link to="/" className="single-char__back">Back to all</Link>
+        </div>
     )
 }
 

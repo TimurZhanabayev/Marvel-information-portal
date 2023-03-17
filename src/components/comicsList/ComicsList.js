@@ -6,22 +6,39 @@ import ErrorMessage from '../errorMessage/ErrorMessage';
 
 import './comicsList.scss';
 
+const setContent = (procedure, Component, newItemLoading) => {
+    switch (procedure) {
+        case 'waiting': 
+            return <Spinner/>
+        case 'loading':
+            return newItemLoading ? <Component/> : <Spinner/>;
+        case 'confirmed':
+            return <Component/>
+        case 'error':
+            return <ErrorMessage/>
+        default:
+            throw new Error('Unexpected procedure state');
+    }
+}
+
 const ComicsList = () => {
     const [comicsList, setComicsList] = useState([]);
     const [newItemLoading, setNewItemLoading] = useState(false);
     const [offset, setOffset] = useState(0);
     const [comicsEnded, setComicsEnded] = useState(false);
 
-    const {loading, error, getAllComics} = useComicService();
+    const {procedure, setProcedure, getAllComics} = useComicService();
 
     useEffect(() => {
-        onRequest();
+        onRequest(offset, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const onRequest = () => {
+    const onRequest = (offset, initial) => {
+        initial ? setNewItemLoading(false) : setNewItemLoading(true);
         getAllComics(offset)
-            .then(onComicsListLoaded);
+            .then(onComicsListLoaded)
+            .then(() => setProcedure('confirmed'));
     }
 
     const onComicsListLoaded = (newComicsList) => {
@@ -34,6 +51,16 @@ const ComicsList = () => {
         setNewItemLoading(false);
         setOffset(offset => offset + 8);
         setComicsEnded(ended);
+    }
+
+    const comicsEndMessage = () => {
+        if (comicsEnded) {
+            return (
+                <button className="button button__main button__long" disabled='true'>
+                    <div className="inner">Сharacter are over</div>
+                </button>
+            )
+        }
     }
 
     function renderItems(arr) {
@@ -55,14 +82,11 @@ const ComicsList = () => {
         )
     }
 
-    const items = renderItems(comicsList);
-    const errorMessage = error ? <ErrorMessage/> : null;
-    const spinner = loading && !newItemLoading ? <Spinner/> : null;
+    const items = () => renderItems(comicsList);
+    const end = comicsEndMessage();
     return (
         <div className="comics__list">
-            {errorMessage}
-            {spinner}
-            {items}
+            {setContent(procedure, items, newItemLoading)}
             <button 
                 disabled={newItemLoading} 
                 style={{'display' : comicsEnded ? 'none' : 'block'}}
@@ -70,6 +94,7 @@ const ComicsList = () => {
                 onClick={() => onRequest(offset)}>
                 <div className="inner">load more</div>
             </button>
+            {end}
         </div>
     )
 }
